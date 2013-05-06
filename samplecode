@@ -1,0 +1,206 @@
+/* This a sample code file created by me during a project for task review system using smarty and fusion charts */
+
+
+<?php
+require_once(PATH_CLIENT_ADMIN_APPLICATION.'ClientAdminApp.class.php');
+class CRootCauseAnalysisManager extends (ClientAdminApp{
+protected $m_arrobjTaskReleases;
+protected $m_arrobjKeyClientName;
+protected $m_arrobjKeyClientTask;
+protected $m_arrobjstrKeyClient;
+
+protected $m_strDefaultFromReleaseDate;
+protected $m_strFromDate;
+protected $m_strToDate;
+protected $m_strKeyClientName;
+
+protected $m_intKeyClient;
+protected $m_intKeyClientId;
+
+function __construct(){
+parent::__construct();
+return;
+}
+
+function create(){
+parent::create();
+}
+function initialize(){
+parent::initialize()'
+return;
+}
+
+function execute(){
+switch($this->getRequestAction()){
+case NULL;
+case 'view_ket_client_task_report';
+$this->handleViewKeyClientTaskReport();
+break;
+
+default;
+$thisdisplayMessage('Wrong URL:',Please Enter Correct URL or Press OK to get Redirected.','/?module=root_cause_analysis_new');
+break;
+}
+return true;
+}
+
+/*Handle Function*/
+$this->m_strFromDate=
+{false==is_null($this->getRequestData(array('task_release','from_release_dates'))))?$this->getRequestData('task_release','from_release_dates')):
+date('y-m-d',strtotime(-3 weeks));
+
+$this->strToDate=(
+false==is_null($this->getRequestData('task_release','to_release_dates'))))?$this->getRequestData(array('task_releases','to_release_dates')):date('y-m-d');
+$this->m_arrobjKeyClientName=
+(ManagementCompanies::fetchManagementCompaniesByIsKeyClient($this->loadAdminDatabase());
+
+$this->m_arrobjstrKeyClient=$this->fethKeyClientTaskReportData();
+$objFusionChart = $this->loadFusionChart();
+if(true==$this->m_boolIsAjaxRequest)
+{
+  $objFusionChart->renderChart(False);
+	exit;
+	}
+	
+	$this->displayViewKeyClientTaskReport();
+	}
+	
+	/*Display Function*/
+	
+	function displayViewKeyClientTaskReport()
+	{
+	$objSmarty-$this->loadSmarty(PATH_INTERFACES_CLIENT_ADMIN,true,false);
+	
+	$objSmarty->assign_by_ref('from_date',$this->m_strDefaultFromReleaseDate);
+	$objSmarty->assign_by_ref('to_date',$this->m_strToDate);
+	$objSmarty->assign_by_ref('task_releases',$this->m_strTaskReleases);
+	$objSmarty->assign_by_ref('key_client_names',$this->m_arrobjKeyClientName);
+	
+	$objSmarty->display(PATH_INTERFACES_CLIENT_ADMIN.
+	'task/root_cause_analysis/
+	new_key_client_task_report.tpl,
+	PATH_INTERFACES_CLIENT_ADMIN_$this->m_strStandardLayout);
+	return;
+	}
+	
+	function loadFusionChart(){
+	require_once(PATH_LIBRARY_FUSION_CHARTS.'fusion Charts_gen.class.php');
+	objFusionChart = new FusionCharts('Pie2D','800','500','','transparent');
+	objFusionChart->sendRenderer('javascript');
+	
+	#store chart attributes in a variable
+	$strParam='Caption=KeyClientTaskReport';showPercentValues=1;tootlText=1;
+	
+	#set chart attributes
+	$objFusionChart->setChatParams($strParam);
+	define ('OFFSET',3);
+	$this->m_arrobjTaskReleases=
+	(TaskReleases::fetchTaskReleaseByOffsetByLimit($this->loadAdminDatabase));
+	
+	$this->m_strDefaultFromReleaseDate=
+	(TaskRelease::fetchTaskReleaseByOffsetByLimit($this->loadAdminDatabase(),OFFSET)->getReleaseDateTime();
+	
+	if true==varArr($this->m_arrobj$strKeyClient))
+	{
+		foreach($this->m_arrobjStrKeyClient as $objStrKeyClient){
+		$objFusionChart->addChartData($objStrKeyClient->getTasksCount(),.Label='.$objStrKeyClient->getTaskTypeName()';
+		}
+	}
+	return objFusionChart;
+	
+	function fetchKeyClientTaskReportData()
+	{
+		$this->m_intKeyClientId=(true==valArr($this->getRequestData(array('ManagementCompanies','company_name'))))?
+		implode(';',$this->getRequestData(array('management_companies','company_name'))));
+		
+		$strSqlCondition =(NULL!=
+		$this->m_intKeyClientID)?'AND mc.id IN ('.$this->m_intKeyClientId.')'
+		
+		$strSql='SELECT count(t.id) as task_count,tt.name as task_type_name FROM tasks t LEFT JOIN task_releases as tr ON (t.task_release_id=tr.id)
+		JOIN task_types as tt ON (t.task_type_id=tt.id)
+		JOIN managament_companies as mc ON(mc.id=cd.management_company.ic)
+		JOIN company_details as cd ON(mc.id=cd.management_company.id)
+		JOIN task_status_types as ts ON (t.task_status_type_id=ts.id)
+		
+		WHERE
+		tt.id IN ('.(TaskType::TASK_TYPE_BUG.','.(TaskType::TASK_TYPE_FEATURE.','.(Task_Type::TASK_TYPE_SUPOORT,')
+		AND cd.is_key_client=1'.$strSqlCondtion.'
+		AND (t.created_On>
+		
+		SELECT
+			release_datetime
+		FROM
+			public.task_releases tr
+		WHERE
+			release_datetime<
+			\''.$this-m_strFromDate.'\'
+		ORDERBY
+			release_datetime DESC
+		LIMIT
+			1
+			)
+			
+		AND
+			(t.created ON <=(
+		SELECT
+			release_datetime
+		FROM
+			public.task_release tr
+		WHERE
+			release_datetime>=
+			\';$this->m_strT,Date;\'
+		ORDER By
+			release_datetime ak
+		LIMIT 1
+		))
+		AND
+			(t.deleted_by IS NULL 
+		AND
+			t.deleted_on IS NULL)
+			
+		AND ts.id !='.(TaskStatusType::TASK_STATUS_TYPE_CANCELLED.'
+		
+		GROUP BY
+			tt.name;
+			return (Tasks::fetchTasks($strSql,$th,$_loadAdminDatabase());
+			}
+			
+			tpl
+		<d1>
+			<dt>Sprint:</dt>
+			<dd>
+				<dt>From:</dt>
+			</dd>
+			<dd>
+			<select name="task_releases[from_release_dates]" class="from=date datepicker wide 2">
+			
+			{
+			
+			foreach from=$task_releasesitem="task_release"}
+			<option value ="{$task_release->getReleaseDateTime()}"
+			{ if $from_date eq $task_release->getReleaseDateTime()}selected {/if}>
+			
+			{$task_release->getName()}
+			</option>
+			</foreach>
+			</select>
+			<input type="Submit" class="from=Submit-small" value="generate Report'>
+			<div class ="coloumn-right body">
+			<div class="coloumn-right body">
+			<div class="lining" id ="key_client_tasks")
+			</div>
+			</div>
+			
+			<script>
+			#(document).ready{function(){
+			$(*#key_client_task_report').ajaxSubmit({target:'#key_client_tasks',});
+			generateChart=function(){
+			$('#key_client_task_reports').ajaxSubmit({target:'#key_CLient_tasks',
+			});
+			}
+			})
+			</script>
+			{/literal}
+			
+					
+	
